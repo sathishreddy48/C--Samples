@@ -43,12 +43,18 @@ namespace Dependency
     }
     class constructor
     {
-
+      
         static void Main(string[] args)
         {
 
-            constructorinjection cs = new constructorinjection(new format());
-            cs.print();
+            //constructorinjection cs = new constructorinjection(new format());
+            //cs.print();
+            string ReleaseVehicleStartDate = DateTime.Now.ToShortDateString();
+            string s = "Below deployment scripts are tagged Release Vehicle which Starts from {ReleaseVehicleStartDate}";
+
+            // string ss = $"" + string.Format(s,ReleaseVehicleStartDate,ReleaseVehicleStartDate);
+            Console.Write("$"+s);
+
             Console.ReadKey();
 
         }

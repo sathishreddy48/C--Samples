@@ -27,7 +27,7 @@ namespace Constructor_Dep_Inj
             Console.WriteLine("here is text format");
         }
     }
-    public class Constructorinjection
+    public class Constructorinjection :IText
     {
         private IText _text;
         public Constructorinjection(IText t1)
