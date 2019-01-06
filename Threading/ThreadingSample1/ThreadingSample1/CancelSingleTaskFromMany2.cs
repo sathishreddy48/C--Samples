@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,19 +15,28 @@ namespace ThreadingSample1
         public static void Main(string[] args)
         {
 
-            var consumers = Enumerable.Range(0, 3).Select((x,y)=> new {TokenSource= new CancellationTokenSource(),Index= y })
+            var consumers = Enumerable.Range(0, 4).Select((x, y) => new { TokenSource = new CancellationTokenSource(), Index = y })
                 .Select((Current) => new
                 {
-                    Task = Task.Run(() => DoWork(Current.TokenSource.Token, Current.Index)),
+                    Task = new Task(() => DoWork(Current.TokenSource.Token, Current.Index)),
                     TokenSource = Current.TokenSource
                 }).ToList();
-
-            Console.WriteLine(consumers.Capacity);
-            consumers[2].TokenSource.Cancel();
+            Task.Factory.StartNew(() => consumers.Select(x => x).ToList().ForEach(taskitem => {//taskitem.Task.Start(); 
+                taskitem.Task.RunSynchronously(); }));
+            Task.Factory.StartNew(() => cancelTask(consumers.Select(x=>x.TokenSource).ToList()));
+         Console.WriteLine(consumers.Capacity);
+            // consumers[2].TokenSource.Cancel();
+            Task.WaitAll(consumers.Select(x => x.Task).ToArray());
             Console.ReadKey();
 
         }
 
+        public static void cancelTask(List <CancellationTokenSource> consumers)
+        {
+            Thread.Sleep(4500);
+            consumers[1].Cancel();
+            Console.WriteLine("Task cancelled");
+        }
         public static void DoWork(CancellationToken cancellationToken,int id)
         {
             for (int i = 0; i < 10; i++)
@@ -34,10 +46,15 @@ namespace ThreadingSample1
                     Console.WriteLine($"Cancellation requested for Task {id} ");
                     break;
                 }
+                Thread.Sleep(500);
                 Console.WriteLine($"Task {id}  - Int value {i}");
             }
         }
 
+        public void Waitforfactorytorun()
+        {
+
+        }
         public void Method()
         {
             CancellationTokenSource tokenSource1 = new CancellationTokenSource();
